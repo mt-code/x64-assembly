@@ -1,0 +1,59 @@
+     1                                  section .data
+     2                                      ;--
+     3                                      ; Constants
+     4                                      SYS_EXIT    equ 60
+     5                                  
+     6                                      ;--
+     7                                      ; Byte (8-bit) variables.
+     8 00000000 11                          bVar1       db 17
+     9 00000001 09                          bVar2       db 9
+    10 00000002 00                          bResult     db 0
+    11                                  
+    12                                      ;--
+    13                                      ; Word (16-bit) variables.
+    14 00000003 6842                        wVar1       dw 17000
+    15 00000005 2823                        wVar2       dw 9000
+    16 00000007 0000                        wResult     dw 0
+    17                                  
+    18                                      ;--
+    19                                      ; Double word (32-bit) variables.
+    20 00000009 40660301                    dVar1       dd 17000000
+    21 0000000D 40548900                    dVar2       dd 9000000
+    22 00000011 00000000                    dResult     dd 0
+    23                                  
+    24                                      ;--
+    25                                      ; Quad word (64-bit) variables.
+    26 00000015 4066030100000000            qVar1       dq 17000000
+    27 0000001D 4054890000000000            qVar2       dq 9000000
+    28 00000025 00000000                    qResult     dd 0
+    29                                  
+    30                                  section .text
+    31                                      global _start
+    32                                      _start:
+    33                                          ;--
+    34                                          ; Byte example (bVar1 + bVar2)
+    35 00000000 8A0425[00000000]                mov al, byte [bVar1]
+    36 00000007 020425[01000000]                add al, byte [bVar2]
+    37 0000000E 880425[02000000]                mov byte [bResult], al
+    38                                  
+    39                                          ;--
+    40                                          ; Word example (wVar1 + wVar2)
+    41 00000015 668B0425[03000000]              mov ax, word [wVar1]
+    42 0000001D 66030425[05000000]              add ax, word [wVar2]
+    43 00000025 66890425[07000000]              mov word [wResult], ax
+    44                                  
+    45                                          ;--
+    46                                          ; Double word example (dVar1 + dVar2)
+    47 0000002D 8B0425[09000000]                mov eax, dword [dVar1]
+    48 00000034 030425[0D000000]                add eax, dword [dVar2]
+    49 0000003B 890425[11000000]                mov dword [dResult], eax
+    50                                  
+    51                                          ;--
+    52                                          ; Quad word example (qVar1 + qVar2)
+    53 00000042 488B0425[15000000]              mov rax, qword [qVar1]
+    54 0000004A 48030425[1D000000]              add rax, qword [qVar2]
+    55 00000052 48890425[25000000]              mov qword [qResult], rax
+    56                                  
+    57 0000005A B83C000000                      mov rax, SYS_EXIT
+    58 0000005F BF00000000                      mov rdi, 0 ; Exit code 0 = success
+    59 00000064 0F05                            syscall
