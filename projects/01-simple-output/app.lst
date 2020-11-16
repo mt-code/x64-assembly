@@ -1,0 +1,26 @@
+     1                                  section .data
+     2                                      ;--
+     3                                      ; Syscalls
+     4                                      SYS_EXIT        equ 60 ; # 0x3C
+     5                                      SYS_WRITE       equ 1
+     6                                  
+     7                                      ;--
+     8                                      ; Strings
+     9 00000000 48656C6C6F2C20576F-         STR_HELLOWORLD  db 'Hello, World!'
+     9 00000009 726C6421           
+    10                                  
+    11                                  section .text
+    12                                      global _start
+    13                                      _start:
+    14 00000000 B801000000                      mov rax, SYS_WRITE
+    15 00000005 BF01000000                      mov rdi, 1  ; Standard output file descriptor
+    16 0000000A 48BE-                           mov rsi, STR_HELLOWORLD
+    16 0000000C [0000000000000000] 
+    17 00000014 BA0D000000                      mov rdx, 13 ; Length of our string
+    18 00000019 0F05                            syscall
+    19                                  
+    20 0000001B B83C000000                      mov rax, SYS_EXIT
+    21 00000020 BF00000000                      mov rdi, 0x0
+    22 00000025 0F05                            syscall
+    23                                  
+    24                                  
