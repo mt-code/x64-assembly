@@ -1,0 +1,58 @@
+     1                                  ; Instructions
+     2                                  ;--
+     3                                  ; mul <src>
+     4                                  ;--
+     5                                  ; byte: ax = al * <src>
+     6                                  ; word: dx:ax = ax * <src>
+     7                                  ; dword: edx:eax = eax * <src>
+     8                                  ; qword: rdx:rax = rax * <src>
+     9                                  
+    10                                  section .data
+    11                                      sys_exit equ 60
+    12                                  
+    13 00000000 2A                          bNumA   db 42
+    14 00000001 49                          bNumB   db 73
+    15 00000002 0000                        wAns1   dw 0
+    16 00000004 0000                        wAns2   dw 0
+    17                                  
+    18 00000006 E110                        wNumA   dw 4321
+    19 00000008 D204                        wNumB   dw 1234
+    20 0000000A 00000000                    dAns2   dd 0
+    21                                  
+    22 0000000E 10A40000                    dNumA   dd 42000
+    23 00000012 281D0100                    dNumB   dd 73000
+    24 00000016 0000000000000000            qAns3   dq 0
+    25                                  
+    26                                  section .text
+    27                                      global _start
+    28                                      _start:
+    29                                          ;--
+    30                                          ; wAns1 = bNumA^2
+    31 00000000 8A0425[00000000]                mov al, byte [bNumA]
+    32 00000007 F6E0                            mul al                      ; result in ax
+    33 00000009 66890425[02000000]              mov word [wAns1], ax
+    34                                  
+    35                                          ;--
+    36                                          ; wAns2 = bNumA * bNumB
+    37 00000011 8A0425[00000000]                mov al, byte [bNumA]
+    38 00000018 F62425[01000000]                mul byte [bNumB]            ; result in ax
+    39 0000001F 66890425[04000000]              mov word [wAns2], ax
+    40                                  
+    41                                          ;--
+    42                                          ; dAns2 = wNumA * wNumB
+    43 00000027 668B0425[06000000]              mov ax, word [wNumA]
+    44 0000002F 66F72425[06000000]              mul word [wNumA]            ; result in dx:ax
+    45 00000037 66890425[0A000000]              mov word [dAns2], ax
+    46 0000003F 66891425[0C000000]              mov word [dAns2 + 2], dx
+    47                                  
+    48                                          ;--
+    49                                          ; qAns3 = dNumA * dNumB
+    50 00000047 8B0425[0E000000]                mov eax, dword [dNumA]
+    51 0000004E F72425[12000000]                mul dword [dNumB]           ; result in edx:eax
+    52 00000055 890425[16000000]                mov dword [qAns3], eax
+    53 0000005C 891425[1A000000]                mov dword [qAns3 + 4], edx
+    54                                  
+    55                                          ; exit
+    56 00000063 B83C000000                      mov rax, sys_exit
+    57 00000068 BA00000000                      mov rdx, 0
+    58 0000006D 0F05                            syscall
