@@ -1,0 +1,177 @@
+     1                                  ; Division
+     2                                  ; -
+     3                                  ; Requires that the dividend must be larger than the divisor.
+     4                                  ; 8-bit divisor requires 16-bit dividend
+     5                                  ; 16-bit divisor requires 32-bit dividend
+     6                                  ; 32-bit divisor requires 64-bit dividend
+     7                                  ;
+     8                                  ; For word, dword, qword division - the A & D registers must be set
+     9                                  ; D register = upper-order
+    10                                  ; A register = lower-order
+    11                                  ;
+    12                                  ; Result gets placed in A register (al,ax,eax,rax)
+    13                                  ; Remainder gets placed in ah or D register (ah, dx, edx, rdx)
+    14                                  ;
+    15                                  ; div <src> (unsigned)
+    16                                  ; idiv <src> (signed)
+    17                                  ;----
+    18                                  ; Unsigned:
+    19                                  ; Set the lower-order register and zero the upper-order register
+    20                                  ;
+    21                                  ; Signed:
+    22                                  ; Set the lower-order register and use a conversion to set the upper-order register (cwd,cdq,cqo)
+    23                                  
+    24                                  section .data
+    25                                      sys_exit equ 60
+    26                                  
+    27                                      ; bytes
+    28 00000000 3F                          bNumA   db 63
+    29 00000001 11                          bNumB   db 17
+    30 00000002 05                          bNumC   db 5
+    31 00000003 00                          bAns1   db 0
+    32 00000004 00                          bAns2   db 0
+    33 00000005 00                          bRem2   db 0
+    34 00000006 00                          bAns3   db 0
+    35                                  
+    36                                      ; words
+    37 00000007 E110                        wNumA   dw 4321
+    38 00000009 D204                        wNumB   dw 1234
+    39 0000000B A700                        wNumC   dw 167
+    40 0000000D 0000                        wAns1   dw 0
+    41 0000000F 0000                        wAns2   dw 0
+    42 00000011 0000                        wRem2   dw 0
+    43 00000013 0000                        wAns3   dw 0
+    44                                  
+    45                                      ; dwords
+    46 00000015 10A40000                    dNumA   dd 42000
+    47 00000019 ABF3FFFF                    dNumB   dd -3157
+    48 0000001D DBFEFFFF                    dNumC   dd -293
+    49 00000021 00000000                    dAns1   dd 0
+    50 00000025 00000000                    dAns2   dd 0
+    51 00000029 00000000                    dRem2   dd 0
+    52 0000002D 00000000                    dAns3   dd 0
+    53                                  
+    54                                      ; qwords
+    55 00000031 90230B0000000000            qNumA   dq 730000
+    56 00000039 70CBFFFFFFFFFFFF            qNumB   dq -13456
+    57 00000041 01FBFFFFFFFFFFFF            qNumC   dq -1279
+    58 00000049 0000000000000000            qAns1   dq 0
+    59 00000051 0000000000000000            qAns2   dq 0
+    60 00000059 0000000000000000            qRem2   dq 0
+    61 00000061 0000000000000000            qAns3   dq 0
+    62                                  
+    63                                  section .text
+    64                                      global _start
+    65                                      _start:
+    66                                          ;--
+    67                                          ; example byte operations (unsigned)
+    68                                  
+    69                                          ;--
+    70                                          ; bAns1 = bNumA / 3
+    71 00000000 8A0425[00000000]                mov al, byte [bNumA]
+    72 00000007 B400                            mov ah, 0               ; zero the ah register after assigning al
+    73 00000009 B303                            mov bl, 3
+    74 0000000B F6F3                            div bl                  ; result in al, remainder in ah
+    75 0000000D 880425[03000000]                mov byte [bAns1], al
+    76                                  
+    77                                          ;--
+    78                                          ; bAns2 = bNumA / bNumB (unsigned)
+    79 00000014 66B80000                        mov ax, 0               ; zero the ax reg (ah:al) before assigning al
+    80 00000018 8A0425[00000000]                mov al, byte [bNumA]
+    81 0000001F F63425[01000000]                div byte [bNumB]        ; result in al, remainder in ah
+    82 00000026 880425[04000000]                mov byte [bAns2], al
+    83 0000002D 882425[05000000]                mov byte [bRem2], ah    ; ah = ax % bNumB
+    84                                  
+    85                                          ;--
+    86                                          ; bAns3 = (bNumA * bNumC) / bNumB
+    87 00000034 8A0425[00000000]                mov al, byte[bNumA]
+    88 0000003B F62425[02000000]                mul byte [bNumC]        ; result in ax (ah:al)
+    89 00000042 F63425[01000000]                div byte [bNumB]        ; result in al, remainder in ah
+    90 00000049 880425[06000000]                mov byte[bAns3], al
+    91                                  
+    92                                          ;--
+    93                                          ; example word operations (unsigned)
+    94                                  
+    95                                          ;--
+    96                                          ; wAns1 = wNumA / 5
+    97 00000050 B800000000                      mov eax, 0              ; zero the eax register before assigning ax
+    98 00000055 668B0425[07000000]              mov ax, word [wNumA]
+    99 0000005D 66BB0500                        mov bx, 5
+   100 00000061 66F7F3                          div bx                  ; result in ax, remainder in dx
+   101 00000064 66890425[0D000000]              mov word [wAns1], ax
+   102                                  
+   103                                          ;--
+   104                                          ; wAns2 = wNumA / wNumB
+   105 0000006C B800000000                      mov eax, 0
+   106 00000071 668B0425[07000000]              mov ax, word [wNumA]
+   107 00000079 66F73425[09000000]              div word [wNumB]        ; result in ax, remainder in dx
+   108 00000081 66890425[0F000000]              mov word [wAns2], ax
+   109 00000089 66891425[11000000]              mov word [wRem2], dx    ; dx = eax % wNumB
+   110                                  
+   111                                          ;--
+   112                                          ; wAns3 = (wNumA * wNumC) / wNumB
+   113 00000091 668B0425[07000000]              mov ax, word [wNumA]
+   114 00000099 66F72425[0B000000]              mul word [wNumC]        ; result in dx:ax
+   115 000000A1 66F73425[09000000]              div word [wNumB]        ; ax = dx:ax / wNumB
+   116 000000A9 66890425[13000000]              mov word [wAns3], ax
+   117                                  
+   118                                          ;----
+   119                                          ; example dword operations (signed)
+   120                                          ;--
+   121                                          ; REMEMBER: signed division requires the upper-order part
+   122                                          ; of the dividend is set correctly with an application
+   123                                          ; conversion instruction.
+   124                                  
+   125                                          ;--
+   126                                          ; dAns1 = dNumA / 7 (signed)
+   127 000000B1 8B0425[15000000]                mov eax, dword [dNumA]
+   128 000000B8 99                              cdq                     ; convert dword to qword, eax -> edx:eax
+   129 000000B9 BB07000000                      mov ebx, 7
+   130 000000BE F7FB                            idiv ebx                ; result in eax, remainder in edx
+   131 000000C0 890425[21000000]                mov dword [dAns1], eax
+   132                                  
+   133                                          ;--
+   134                                          ; dAns2 = dNumA / dNumB (signed)
+   135 000000C7 8B0425[15000000]                mov eax, dword [dNumA]
+   136 000000CE 99                              cdq                     ; convert dword to qword, eax -> edx:eax
+   137 000000CF F73C25[19000000]                idiv dword [dNumB]      ; result in eax, remainder in edx
+   138 000000D6 890425[25000000]                mov dword [dAns2], eax
+   139 000000DD 891425[29000000]                mov dword [dRem2], edx
+   140                                  
+   141                                          ;--
+   142                                          ; dAns3 = (dNumA * dNumC) / dNumB (signed)
+   143 000000E4 8B0425[15000000]                mov eax, dword [dNumA]
+   144 000000EB F72C25[1D000000]                imul dword [dNumC]      ; result in edx:eax
+   145 000000F2 F73C25[19000000]                idiv dword [dNumB]      ; result in eax, remainder in edx
+   146 000000F9 890425[2D000000]                mov dword [dAns3], eax
+   147                                  
+   148                                          ;--
+   149                                          ; example qword operations (signed)
+   150                                  
+   151                                          ;--
+   152                                          ; qAns1 = qNumA / 9 (signed)
+   153 00000100 488B0425[31000000]              mov rax, qword [qNumA]
+   154 00000108 4899                            cqo                     ; convert qword to oword (octword)
+   155 0000010A BB09000000                      mov rbx, 9
+   156 0000010F 48F7FB                          idiv rbx                ; result in rax, remainder in rdx
+   157 00000112 48890425[49000000]              mov qword [qAns1], rax
+   158                                  
+   159                                          ;--
+   160                                          ; qAns2 = qNumA / qNumB (signed)
+   161 0000011A 488B0425[31000000]              mov rax, qword [qNumA]
+   162 00000122 4899                            cqo
+   163 00000124 48F73C25[39000000]              idiv qword [qNumB]      ; result in rax, remainder in rdx
+   164 0000012C 48890425[51000000]              mov qword [qAns2], rax
+   165 00000134 48891425[59000000]              mov qword [qRem2], rdx
+   166                                  
+   167                                          ;--
+   168                                          ; qAns3 = (qNumA * qNumC) / qNumB (signed)
+   169 0000013C 488B0425[31000000]              mov rax, qword [qNumA]
+   170 00000144 48F72C25[41000000]              imul qword [qNumC]      ; result in rdx:rax
+   171 0000014C 48F73C25[39000000]              idiv qword [qNumB]      ; result in rax, remainder in rdx
+   172 00000154 48890425[61000000]              mov qword [qAns3], rax
+   173                                  
+   174                                          ;exit
+   175 0000015C B83C000000                      mov rax, sys_exit
+   176 00000161 BA00000000                      mov rdx, 0
+   177 00000166 0F05                            syscall
