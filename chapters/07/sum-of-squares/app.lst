@@ -1,0 +1,39 @@
+     1                                  section .data
+     2                                      ; Constants
+     3                                      SUCCESS     equ 0
+     4                                      SYS_EXIT    equ 60
+     5                                  
+     6                                      ; Vars
+     7 00000000 0A000000                    n dd 10
+     8 00000004 0000000000000000            sumOfSquares dq 0
+     9                                  
+    10                                  section .text
+    11                                      global _start
+    12                                      _start:
+    13                                          ;--
+    14                                          ; Compute sum of squares from 1 to n (inclusive).
+    15                                          ;
+    16                                          ; Approach:
+    17                                          ; for (i = 1; i <= n; i++)
+    18                                          ;     sumOfSquares += i ^ 2;
+    19 00000000 BB01000000                      mov rbx, 1              ; i
+    20 00000005 8B0C25[00000000]                mov ecx, dword [n]
+    21                                  
+    22                                      sumLoop:
+    23 0000000C 4889D8                          mov rax, rbx
+    24 0000000F 48F7E0                          mul rax
+    25 00000012 48010425[04000000]              add qword[sumOfSquares], rax
+    26 0000001A 48FFC3                          inc rbx                 ; i++
+    27                                  
+    28                                          ; These 3 instructions can be shortened to:
+    29                                          ; loop sumLoop
+    30 0000001D FFC9                            dec ecx
+    31 0000001F 83F900                          cmp ecx, 0
+    32 00000022 75E8                            jne sumLoop
+    33                                  
+    34                                      last:
+    35 00000024 B83C000000                      mov rax, SYS_EXIT
+    36 00000029 BA00000000                      mov rdx, SUCCESS
+    37 0000002E 0F05                            syscall
+    38                                  
+    39                                  
