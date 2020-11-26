@@ -1,0 +1,62 @@
+     1                                  section .data
+     2                                      ; bAns1 = bNum1 + bNum2
+     3 00000000 00                          bAns1   db 0
+     4 00000001 44                          bNum1   db 68
+     5 00000002 09                          bNum2   db 9
+     6                                  
+     7                                      ; bAns2 = bNum3 - bNum4
+     8 00000003 00                          bAns2   db 0
+     9 00000004 32                          bNum3   db 50
+    10 00000005 0D                          bNum4   db 13
+    11                                  
+    12                                      ; wAns1 = bNum5 * bNum6
+    13 00000006 0000                        wAns1   dw 0
+    14 00000008 05                          bNum5   db 5
+    15 00000009 07                          bNum6   db 7
+    16                                  
+    17                                      ; bAns3 = bNum1 / bNum5
+    18 0000000A 00                          bAns3   db 0
+    19                                  
+    20                                      ; bRem1 = wNum1 % bNum5
+    21 0000000B 00                          bRem1   db 0
+    22 0000000C 7F00                        wNum1   dw 127
+    23                                  
+    24                                  section .text
+    25                                      global _start
+    26                                      _start:
+    27                                          ;--
+    28                                          ; bAns1 = bNum1 + bNum2
+    29 00000000 8A0425[01000000]                mov al, byte [bNum1]
+    30 00000007 020425[02000000]                add al, byte [bNum2]
+    31 0000000E 880425[00000000]                mov byte [bAns1], al
+    32                                  
+    33                                          ;--
+    34                                          ; bAns2 = bNum3 - bNum4
+    35 00000015 8A0425[04000000]                mov al, byte [bNum3]
+    36 0000001C 2A0425[05000000]                sub al, byte [bNum4]
+    37 00000023 880425[03000000]                mov byte [bAns2], al
+    38                                  
+    39                                          ;--
+    40                                          ; wAns1 = bNum5 * bNum6
+    41 0000002A 8A0425[08000000]                mov al, byte [bNum5]
+    42 00000031 F62425[09000000]                mul byte [bNum6]
+    43 00000038 66890425[06000000]              mov word [wAns1], ax
+    44                                  
+    45                                          ;--
+    46                                          ; bAns3 = bNum1 / bNum5
+    47 00000040 8A0425[01000000]                mov al, byte [bNum1]
+    48 00000047 B400                            mov ah, 0
+    49 00000049 F63425[08000000]                div byte [bNum5]
+    50 00000050 880425[0A000000]                mov byte [bAns3], al
+    51                                  
+    52                                          ;--
+    53                                          ; bRem1 = wNum1 % bNum5
+    54 00000057 8A0425[0C000000]                mov al, byte [wNum1]
+    55 0000005E B400                            mov ah, 0
+    56 00000060 F63425[08000000]                div byte [bNum5]
+    57 00000067 882425[0B000000]                mov byte [bRem1], ah
+    58                                  
+    59                                      exit:
+    60 0000006E B83C000000                      mov rax, 60 ; sys_exit
+    61 00000073 BA00000000                      mov rdx, 0 ; success
+    62 00000078 0F05                            syscall
